@@ -1,10 +1,10 @@
 import React, { useContext } from 'react'
-import { useHistory, useParams } from 'react-router'
+import { useHistory } from 'react-router'
 import { Table } from 'antd'
 import 'antd/dist/antd.css'
 import { Context } from 'src/components/context/context'
 
-interface IItem {
+export interface IItem {
   id: number
   category: string
   price: number
@@ -20,8 +20,6 @@ interface IItem {
 const AntdUserList = () => {
   const itemData = useContext(Context)
   const history = useHistory()
-  const { id }: any = useParams()
-  console.log('id', id)
 
   const handleClick = (e: { id: number }) => {
     itemData.forEach((user: IItem) => {

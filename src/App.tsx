@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom'
+import ItemPage from 'src/components/ItemPage/ItemPage'
 import ItemList from './components/ItemList/ItemList'
 import apiClient from './utils/api/apiClient'
 import PATHS from './utils/api/Path'
@@ -22,15 +23,15 @@ function App() {
   return (
     <Router>
       <Switch>
-        <Route exact path="/items">
-          <Context.Provider value={itemData}>
+        <Context.Provider value={itemData}>
+          <Route exact path="/items">
             <ItemList />
-          </Context.Provider>
-        </Route>
-        <Route path="/items/:id">
-          <div>Hello Worl!</div>
-        </Route>
-        <Redirect from="" to="/items" />
+          </Route>
+          <Route path="/items/:id">
+            <ItemPage />
+          </Route>
+          <Redirect from="" to="/items" />
+        </Context.Provider>
       </Switch>
     </Router>
   )
