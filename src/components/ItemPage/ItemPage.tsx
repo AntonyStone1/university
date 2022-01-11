@@ -1,25 +1,88 @@
 import React, { useContext } from 'react'
-import { useParams } from 'react-router'
+import { Box, Button, Typography } from '@mui/material'
+import { makeStyles } from '@mui/styles'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { useHistory, useParams } from 'react-router'
 import { Context } from 'src/components/context/context'
-import { IItem } from '../ItemList/ItemList'
+import IItemList from 'src/types/IItemList'
+
+const useStyles = makeStyles({
+  wrapper: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    border: '1px solid  blue',
+    height: '99.5vh',
+  },
+  content: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    width: '70%',
+    padding: '20px',
+    backgroundColor: 'white',
+    boxShadow: '0px 2px 8px rgb(0 0 0 / 10%)',
+    borderRadius: '20px',
+  },
+  arrow: {
+    position: 'absolute',
+    top: '20px',
+    left: '20px',
+    cursor: 'pointer',
+  },
+  imageContainer: {
+    marginRight: '7%',
+    width: '150px',
+  },
+  itemImg: {
+    width: '100%',
+  },
+  containerInfo: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  info: {
+    width: '60%',
+    padding: '10px',
+  },
+})
 
 const ItemPage = () => {
-  const itemData: Array<IItem> = useContext(Context)
+  const itemData: Array<IItemList> = useContext(Context)
+  const history = useHistory()
   const { id }: any = useParams()
-  console.log(+id)
+  const style = useStyles()
   console.log('data', itemData)
 
+  const handleClick = () => {
+    history.push('/items')
+  }
   const currentItem = itemData.find((item) => item.id === +id)
   console.log(currentItem)
 
   return (
-    <div className="container">
-      <div className="info">
-        <img />
-        <h3>{currentItem?.title}</h3>
-      </div>
-
-      <div className="change-info" />
+    <div className={style.wrapper}>
+      <Box className={style.content}>
+        <ArrowBackIcon className={style.arrow} onClick={handleClick} />
+        <Box className={style.containerInfo}>
+          <Box className={style.imageContainer}>
+            <img src={currentItem?.image} className={style.itemImg} />
+          </Box>
+          <Box className={style.info}>
+            <Box>
+              <Typography>{currentItem?.price}</Typography>
+              <Typography>{currentItem?.title}</Typography>
+              <Typography>{currentItem?.description}</Typography>
+              <Typography>{currentItem?.rating.rate}</Typography>
+            </Box>
+            <Box>
+              <Button variant="outlined">Change</Button>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     </div>
   )
 }

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom'
 import ItemPage from 'src/components/ItemPage/ItemPage'
-import ItemList from './components/ItemList/ItemList'
+// import ItemList from './components/ItemList/ItemList'
+import { Container } from '@mui/material'
+import ItemListMU from './components/ItemList/ItemListMU'
 import apiClient from './utils/api/apiClient'
 import PATHS from './utils/api/Path'
 import { Context } from './components/context/context'
@@ -25,7 +27,10 @@ function App() {
       <Switch>
         <Context.Provider value={itemData}>
           <Route exact path="/items">
-            <ItemList />
+            {/* <ItemList /> */}
+            <Container>
+              <ItemListMU />
+            </Container>
           </Route>
           <Route path="/items/:id">
             <ItemPage />
