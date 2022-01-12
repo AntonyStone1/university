@@ -1,10 +1,12 @@
-import React, { useContext } from 'react'
-import { Box, Button, Typography } from '@mui/material'
+/* eslint-disable jsx-a11y/label-has-associated-control */
+import React, { useEffect, useState } from 'react'
+import { Box, Button, Skeleton, Typography } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { useHistory, useParams } from 'react-router'
-import { Context } from 'src/components/context/context'
-import IItemList from 'src/types/IItemList'
+import { setRating, getItem } from 'src/utils/api/api'
+import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { useForm } from 'react-hook-form'
 
 const useStyles = makeStyles({
   wrapper: {
@@ -32,7 +34,7 @@ const useStyles = makeStyles({
     cursor: 'pointer',
   },
   imageContainer: {
-    marginRight: '7%',
+    marginRight: '10%',
     width: '150px',
   },
   itemImg: {
@@ -47,50 +49,122 @@ const useStyles = makeStyles({
     width: '60%',
     padding: '10px',
   },
+  input: {
+    border: 'none',
+    backgroundImage: 'none',
+    backgroundColor: 'transparent',
+    webkitBoxShadow: 'none',
+    mozBoxShadow: 'none',
+    boxShadow: 'none',
+  },
 })
 
 const ItemPage = () => {
-  const itemData: Array<IItemList> = useContext(Context)
-  const history = useHistory()
   const { id }: any = useParams()
+  const {
+    data,
+    error,
+    isLoading,
+    isError,
+  }: { data: any; error: any; isLoading: boolean; isError: boolean } = useQuery(
+    ['items', { id }],
+    getItem,
+  )
+
+  const queryClient = useQueryClient()
+  const [isRated, setRated] = useState(false)
+  const { mutateAsync, isLoading: isMutation } = useMutation(setRating)
+  const { register, reset, getValues, handleSubmit } = useForm({ defaultValues: { rating: '...' } })
+
+  const createObj = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const result = { rating: { rate: '' }, id: '' }
+    result.rating.rate = getValues('rating')
+    result.id = id
+    setRated((prev) => !prev)
+    console.log(result)
+    return result
+  }
+  const addCom = async () => {
+    await mutateAsync(data)
+    queryClient.invalidateQueries('items')
+  }
+  useEffect(() => {
+    if (!isLoading) {
+      reset({ rating: data.rating.rate })
+    }
+  }, [isLoading])
+  const history = useHistory()
   const style = useStyles()
-  console.log('data', itemData)
 
   const handleClick = () => {
     history.push('/items')
   }
-  const currentItem = itemData.find((item) => item.id === +id)
-  console.log(currentItem)
+  if (isError) {
+    throw new Error(error.message)
+  }
 
   return (
     <div className={style.wrapper}>
-      <Box className={style.content}>
-        <ArrowBackIcon className={style.arrow} onClick={handleClick} />
-        <Box className={style.containerInfo}>
-          <Box className={style.imageContainer}>
-            <img src={currentItem?.image} className={style.itemImg} />
-          </Box>
-          <Box className={style.info}>
-            <Box>
-              <Typography variant="h2" sx={{ paddingBottom: '20px' }}>
-                {currentItem?.price}$
-              </Typography>
-              {/* <input type="textarea" value={currentItem?.title} /> */}
-              <Typography variant="h4" sx={{ paddingBottom: '10px' }}>
-                {currentItem?.title}
-              </Typography>
-
-              <Typography sx={{ paddingBottom: '20px' }}>{currentItem?.description}</Typography>
-              <Typography variant="h5" sx={{ paddingBottom: '30px' }}>
-                {currentItem?.rating.rate}
-              </Typography>
+      {isLoading || isMutation ? (
+        <Box sx={{ width: 300 }}>
+          <Skeleton />
+          <Skeleton animation="wave" />
+          <Skeleton animation={false} />
+        </Box>
+      ) : (
+        <Box className={style.content}>
+          <ArrowBackIcon className={style.arrow} onClick={handleClick} />
+          <Box className={style.containerInfo}>
+            <Box className={style.imageContainer}>
+              <img src={data?.image} className={style.itemImg} />
             </Box>
-            <Box>
-              <Button variant="outlined">Add comment</Button>
+            <Box className={style.info}>
+              <form>
+                <Box>
+                  <Typography variant="h2" sx={{ paddingBottom: '20px' }}>
+                    {data?.price} $
+                  </Typography>
+                  <Typography variant="h4" sx={{ paddingBottom: '10px' }}>
+                    {data?.title}
+                  </Typography>
+
+                  <Typography sx={{ paddingBottom: '20px' }}>{data?.description}</Typography>
+                  <Typography variant="h5" sx={{ paddingBottom: '30px' }}>
+                    <label htmlFor="rating">Rating</label>
+                    <input
+                      {...register('rating', {
+                        required: true,
+                        pattern: /^[1-9]+$/,
+                      })}
+                      name="rating"
+                      id="rating"
+                      className={style.input}
+                      type="text"
+                      disabled={!isRated}
+                    />
+                  </Typography>
+                </Box>
+                <Box>
+                  {!isRated ? (
+                    <Button variant="outlined" onClick={() => setRated(true)}>
+                      Set rating
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outlined"
+                      // type={isRated ? 'submit' : 'button'}
+                      onClick={createObj}
+                    >
+                      Submit
+                    </Button>
+                  )}
+                </Box>
+              </form>
             </Box>
           </Box>
         </Box>
-      </Box>
+      )}
     </div>
   )
 }

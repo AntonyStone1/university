@@ -1,3 +1,4 @@
+/* eslint-disable no-return-await */
 import * as React from 'react'
 import Paper from '@mui/material/Paper'
 import Table from '@mui/material/Table'
@@ -7,10 +8,10 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TablePagination from '@mui/material/TablePagination'
 import TableRow from '@mui/material/TableRow'
-import { useContext } from 'react'
 import { useHistory } from 'react-router'
 import IItemList from 'src/types/IItemList'
-import { Context } from '../context/context'
+import { useQuery } from 'react-query'
+import { getItemsData } from 'src/utils/api/api'
 
 interface Column {
   id: 'id' | 'title' | 'price' | 'category'
@@ -21,7 +22,7 @@ interface Column {
 }
 
 const columns: readonly Column[] = [
-  { id: 'id', label: '№', minWidth: 30 },
+  { id: 'id', label: '№', minWidth: 5 },
   { id: 'title', label: 'Title', minWidth: 100 },
   {
     id: 'price',
@@ -40,14 +41,19 @@ const columns: readonly Column[] = [
 ]
 
 export default function ItemListMU() {
-  const itemData = useContext(Context)
+  const { data, error, isLoading, isError } = useQuery('items', getItemsData)
   const history = useHistory()
+
+  console.log('data', data)
+  console.log('error', error)
+  console.log('isLoading', isLoading)
+  console.log('isError', isError)
 
   const handleClick = (e: React.MouseEvent<HTMLTableRowElement>) => {
     const currentNumber = e.currentTarget.textContent?.slice(0, 1)
-    console.log(e.currentTarget.textContent?.slice(0, 1))
+    console.log(e.currentTarget?.textContent?.slice(0, 1))
 
-    itemData.forEach((user: IItemList) => {
+    data.forEach((user: IItemList) => {
       if (currentNumber === undefined) {
         return
       }
@@ -88,8 +94,8 @@ export default function ItemListMU() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {itemData
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+            {data
+              ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row: IItemList) => {
                 return (
                   <TableRow
@@ -121,7 +127,7 @@ export default function ItemListMU() {
       <TablePagination
         rowsPerPageOptions={[10, 25, 100]}
         component="div"
-        count={itemData.length}
+        count={data?.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
