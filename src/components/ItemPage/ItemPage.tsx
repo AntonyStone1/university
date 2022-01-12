@@ -72,13 +72,21 @@ const ItemPage = () => {
           </Box>
           <Box className={style.info}>
             <Box>
-              <Typography>{currentItem?.price}</Typography>
-              <Typography>{currentItem?.title}</Typography>
-              <Typography>{currentItem?.description}</Typography>
-              <Typography>{currentItem?.rating.rate}</Typography>
+              <Typography variant="h2" sx={{ paddingBottom: '20px' }}>
+                {currentItem?.price}$
+              </Typography>
+              {/* <input type="textarea" value={currentItem?.title} /> */}
+              <Typography variant="h4" sx={{ paddingBottom: '10px' }}>
+                {currentItem?.title}
+              </Typography>
+
+              <Typography sx={{ paddingBottom: '20px' }}>{currentItem?.description}</Typography>
+              <Typography variant="h5" sx={{ paddingBottom: '30px' }}>
+                {currentItem?.rating.rate}
+              </Typography>
             </Box>
             <Box>
-              <Button variant="outlined">Change</Button>
+              <Button variant="outlined">Add comment</Button>
             </Box>
           </Box>
         </Box>
