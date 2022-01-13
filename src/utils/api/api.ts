@@ -10,19 +10,22 @@ export const getItemsData = async () => {
   return response.json()
 }
 
-export const setRating = async (data: any) => {
-  const response = await fetch(`${PATHS.getUserData}/${data.id}`, {
+export const setRating = async ({ id, ...data }: { data: any; id: any }) => {
+  const response = await fetch(`${PATHS.getUserData}/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(data),
   })
+  console.log('api', data)
 
   if (!response.ok) {
     throw new Error('Some error')
   }
-  return true
+  console.log('response', response)
+
+  return response
 }
 
 export const getItem = async ({ queryKey }: any) => {

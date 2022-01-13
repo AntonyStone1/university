@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useEffect, useState } from 'react'
-import { Box, Button, Skeleton, Typography } from '@mui/material'
+import { Box, Button, CircularProgress, Typography } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { useHistory, useParams } from 'react-router'
 import { setRating, getItem } from 'src/utils/api/api'
-import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { useQuery, useMutation } from 'react-query'
 import { useForm } from 'react-hook-form'
 
 const useStyles = makeStyles({
@@ -56,10 +56,22 @@ const useStyles = makeStyles({
     webkitBoxShadow: 'none',
     mozBoxShadow: 'none',
     boxShadow: 'none',
+    fontSize: '34px',
+    width: '60px',
+    marginLeft: '15px',
+  },
+  errorText: {
+    position: 'absolute',
+    top: '30px',
+    left: '100px',
+    fontSize: '10px',
+    color: 'red',
   },
 })
 
 const ItemPage = () => {
+  const history = useHistory()
+  const style = useStyles()
   const { id }: any = useParams()
   const {
     data,
@@ -70,101 +82,122 @@ const ItemPage = () => {
     ['items', { id }],
     getItem,
   )
-
-  const queryClient = useQueryClient()
+  const { mutateAsync } = useMutation(setRating)
+  const {
+    register,
+    reset,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({ defaultValues: { rating: '...' } })
   const [isRated, setRated] = useState(false)
-  const { mutateAsync, isLoading: isMutation } = useMutation(setRating)
-  const { register, reset, getValues, handleSubmit } = useForm({ defaultValues: { rating: '...' } })
 
-  const createObj = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    const result = { rating: { rate: '' }, id: '' }
-    result.rating.rate = getValues('rating')
-    result.id = id
-    setRated((prev) => !prev)
-    console.log(result)
-    return result
-  }
-  const addCom = async () => {
-    await mutateAsync(data)
-    queryClient.invalidateQueries('items')
-  }
   useEffect(() => {
     if (!isLoading) {
       reset({ rating: data.rating.rate })
     }
   }, [isLoading])
-  const history = useHistory()
-  const style = useStyles()
+
+  const onSubmit = async (formData: any) => {
+    console.log({ ...formData, id })
+    await mutateAsync({ ...formData, id })
+  }
+  const onFormSubmit = handleSubmit((formData) => {
+    onSubmit(formData)
+  })
 
   const handleClick = () => {
     history.push('/items')
   }
+  if (isLoading)
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+          height: '100vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    )
   if (isError) {
     throw new Error(error.message)
+  }
+  const tobbleButton = () => {
+    if (!errors.rating) {
+      setRated((prev) => !prev)
+    }
   }
 
   return (
     <div className={style.wrapper}>
-      {isLoading || isMutation ? (
-        <Box sx={{ width: 300 }}>
-          <Skeleton />
-          <Skeleton animation="wave" />
-          <Skeleton animation={false} />
-        </Box>
-      ) : (
-        <Box className={style.content}>
-          <ArrowBackIcon className={style.arrow} onClick={handleClick} />
-          <Box className={style.containerInfo}>
-            <Box className={style.imageContainer}>
-              <img src={data?.image} className={style.itemImg} />
-            </Box>
-            <Box className={style.info}>
-              <form>
-                <Box>
-                  <Typography variant="h2" sx={{ paddingBottom: '20px' }}>
-                    {data?.price} $
-                  </Typography>
-                  <Typography variant="h4" sx={{ paddingBottom: '10px' }}>
-                    {data?.title}
-                  </Typography>
+      <Box className={style.content}>
+        <ArrowBackIcon className={style.arrow} onClick={handleClick} />
+        <Box className={style.containerInfo}>
+          <Box className={style.imageContainer}>
+            <img src={data?.image} className={style.itemImg} />
+          </Box>
+          <Box className={style.info}>
+            <form onSubmit={onFormSubmit}>
+              <Box>
+                <Typography variant="h2" sx={{ paddingBottom: '20px' }}>
+                  {data?.price} $
+                </Typography>
+                <Typography variant="h4" sx={{ paddingBottom: '10px' }}>
+                  {data?.title}
+                </Typography>
 
-                  <Typography sx={{ paddingBottom: '20px' }}>{data?.description}</Typography>
-                  <Typography variant="h5" sx={{ paddingBottom: '30px' }}>
-                    <label htmlFor="rating">Rating</label>
-                    <input
-                      {...register('rating', {
-                        required: true,
-                        pattern: /^[1-9]+$/,
-                      })}
-                      name="rating"
-                      id="rating"
-                      className={style.input}
-                      type="text"
-                      disabled={!isRated}
-                    />
-                  </Typography>
-                </Box>
-                <Box>
-                  {!isRated ? (
-                    <Button variant="outlined" onClick={() => setRated(true)}>
-                      Set rating
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outlined"
-                      // type={isRated ? 'submit' : 'button'}
-                      onClick={createObj}
-                    >
-                      Submit
-                    </Button>
+                <Typography sx={{ paddingBottom: '20px' }}>{data?.description}</Typography>
+                <Typography
+                  variant="h5"
+                  sx={{ paddingBottom: '30px' }}
+                  style={{ position: 'relative' }}
+                >
+                  <label htmlFor="rating">Rating</label>
+                  <input
+                    {...register('rating', {
+                      required: true,
+                      pattern: /^[1-5]+$/,
+                    })}
+                    name="rating"
+                    id="rating"
+                    className={style.input}
+                    type="number"
+                    disabled={!isRated}
+                    autoComplete="off"
+                  />
+                  {errors?.rating?.type === 'required' && (
+                    <p className={style.errorText}>This field is required</p>
                   )}
-                </Box>
-              </form>
-            </Box>
+                  {errors?.rating?.type === 'pattern' && (
+                    <p className={style.errorText}>Only nubmers from 0 to 5</p>
+                  )}
+                </Typography>
+              </Box>
+              <Box>
+                <Button
+                  variant="outlined"
+                  style={isRated ? { pointerEvents: 'none', marginRight: '30px' } : {}}
+                  onClick={() => setRated((prev) => !prev)}
+                >
+                  Set rating
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  type="submit"
+                  style={!isRated ? { display: 'none' } : {}}
+                  onClick={tobbleButton}
+                >
+                  Submit
+                </Button>
+              </Box>
+            </form>
           </Box>
         </Box>
-      )}
+      </Box>
     </div>
   )
 }

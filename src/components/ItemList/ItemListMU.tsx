@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-undef */
 /* eslint-disable no-return-await */
 import * as React from 'react'
 import Paper from '@mui/material/Paper'
@@ -12,6 +13,7 @@ import { useHistory } from 'react-router'
 import IItemList from 'src/types/IItemList'
 import { useQuery } from 'react-query'
 import { getItemsData } from 'src/utils/api/api'
+import { Box, CircularProgress } from '@mui/material'
 
 interface Column {
   id: 'id' | 'title' | 'price' | 'category'
@@ -31,6 +33,12 @@ const columns: readonly Column[] = [
     align: 'center',
     format: (value: number) => value.toLocaleString('en-US'),
   },
+  // {
+  //   id: 'rating',
+  //   label: 'Rating',
+  //   minWidth: 5,
+  //   format: (value: number) => String(value),
+  // },
   {
     id: 'category',
     label: 'Category',
@@ -75,7 +83,20 @@ export default function ItemListMU() {
     setRowsPerPage(+event.target.value)
     setPage(0)
   }
-
+  if (isLoading)
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+          height: '100vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    )
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
       <TableContainer sx={{ maxHeight: 590 }}>
