@@ -11,9 +11,11 @@ import TablePagination from '@mui/material/TablePagination'
 import TableRow from '@mui/material/TableRow'
 import { useHistory } from 'react-router'
 import IItemList from 'src/types/IItemList'
-import { useQuery } from 'react-query'
+import { useQuery, useQueryClient } from 'react-query'
 import { getItemsData } from 'src/utils/api/api'
 import { Box, CircularProgress } from '@mui/material'
+import { Link } from 'react-router-dom'
+import { makeStyles } from '@mui/styles'
 
 interface Column {
   id: 'id' | 'title' | 'price' | 'category'
@@ -33,12 +35,6 @@ const columns: readonly Column[] = [
     align: 'center',
     format: (value: number) => value.toLocaleString('en-US'),
   },
-  // {
-  //   id: 'rating',
-  //   label: 'Rating',
-  //   minWidth: 5,
-  //   format: (value: number) => String(value),
-  // },
   {
     id: 'category',
     label: 'Category',
@@ -47,9 +43,33 @@ const columns: readonly Column[] = [
     format: (value: number) => value.toLocaleString('en-US'),
   },
 ]
+const useStyles = makeStyles({
+  link: {
+    textDecoration: 'none',
+    color: 'inherit',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+})
 
 export default function ItemListMU() {
-  const { data, error, isLoading, isError } = useQuery('items', getItemsData)
+  const style = useStyles()
+  const queryClient = useQueryClient()
+  console.log(queryClient.getQueryData('items'))
+
+  const { data, error, isLoading, isError } = useQuery('items', getItemsData, {
+    placeholderData: () => {
+      const currtentItem: any = queryClient.getQueryData('items')
+      console.log('chache', currtentItem)
+      return currtentItem ?? null
+    },
+    onError() {
+      history.push('/')
+    },
+    retry: 2,
+    retryDelay: 2000,
+  })
   const history = useHistory()
 
   console.log('data', data)
@@ -57,21 +77,6 @@ export default function ItemListMU() {
   console.log('isLoading', isLoading)
   console.log('isError', isError)
 
-  const handleClick = (e: React.MouseEvent<HTMLTableRowElement>) => {
-    const currentNumber = e.currentTarget.textContent?.slice(0, 1)
-    console.log(e.currentTarget?.textContent?.slice(0, 1))
-
-    data.forEach((user: IItemList) => {
-      if (currentNumber === undefined) {
-        return
-      }
-      if (String(user.id) === currentNumber) {
-        console.log(`/items/${currentNumber}`)
-
-        history.push({ pathname: `/items/${currentNumber}` })
-      }
-    })
-  }
   const [page, setPage] = React.useState(0)
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
 
@@ -119,23 +124,16 @@ export default function ItemListMU() {
               ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row: IItemList) => {
                 return (
-                  <TableRow
-                    hover
-                    role="checkbox"
-                    tabIndex={-1}
-                    key={row.id}
-                    style={{ cursor: 'pointer' }}
-                    onClick={(e: React.MouseEvent<HTMLTableRowElement, MouseEvent>) =>
-                      handleClick(e)
-                    }
-                  >
+                  <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
                     {columns.map((column) => {
                       const value = row[column.id]
                       return (
                         <TableCell key={column.id} align={column.align}>
-                          {column.format && typeof value === 'number'
-                            ? column.format(value)
-                            : value}
+                          <Link to={`/items/${row.id}`} className={style.link}>
+                            {column.format && typeof value === 'number'
+                              ? column.format(value)
+                              : value}
+                          </Link>
                         </TableCell>
                       )
                     })}

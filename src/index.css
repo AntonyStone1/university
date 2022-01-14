@@ -27,6 +27,7 @@ input:focus {
 }
 input:disabled {
   color: black;
+  border: none;
 }
 
 input::-webkit-outer-spin-button,

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-d
 import ItemPage from 'src/components/ItemPage/ItemPage'
 import { Container } from '@mui/material'
 import { QueryClientProvider, QueryClient } from 'react-query'
+import { ReactQueryDevtools } from 'react-query/devtools'
 import ItemListMU from './components/ItemList/ItemListMU'
 
 const queryClient = new QueryClient()
@@ -23,6 +24,7 @@ function App() {
           <Redirect from="" to="/items" />
         </Switch>
       </Router>
+      <ReactQueryDevtools initialIsOpen />
     </QueryClientProvider>
   )
 }

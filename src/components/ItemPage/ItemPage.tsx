@@ -5,16 +5,16 @@ import { makeStyles } from '@mui/styles'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { useHistory, useParams } from 'react-router'
 import { setRating, getItem } from 'src/utils/api/api'
-import { useQuery, useMutation } from 'react-query'
+import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { useForm } from 'react-hook-form'
+import { Link } from 'react-router-dom'
 
 const useStyles = makeStyles({
   wrapper: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    border: '1px solid  blue',
-    height: '99.5vh',
+    height: '80vh',
   },
   content: {
     display: 'flex',
@@ -22,6 +22,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     position: 'relative',
     width: '70%',
+    maxWidth: '980px',
     padding: '20px',
     backgroundColor: 'white',
     boxShadow: '0px 2px 8px rgb(0 0 0 / 10%)',
@@ -31,6 +32,9 @@ const useStyles = makeStyles({
     position: 'absolute',
     top: '20px',
     left: '20px',
+    color: 'black',
+    transform: 'scale(1.5)',
+    textDecoration: 'none',
     cursor: 'pointer',
   },
   imageContainer: {
@@ -59,6 +63,7 @@ const useStyles = makeStyles({
     fontSize: '34px',
     width: '60px',
     marginLeft: '15px',
+    borderBottom: '1px solid black',
   },
   errorText: {
     position: 'absolute',
@@ -71,6 +76,9 @@ const useStyles = makeStyles({
 
 const ItemPage = () => {
   const history = useHistory()
+  const queryClient = useQueryClient()
+  console.log(queryClient.getQueryData('items'))
+
   const style = useStyles()
   const { id }: any = useParams()
   const {
@@ -81,6 +89,20 @@ const ItemPage = () => {
   }: { data: any; error: any; isLoading: boolean; isError: boolean } = useQuery(
     ['items', { id }],
     getItem,
+    {
+      placeholderData() {
+        const currtentItem: any = queryClient
+          .getQueryData('items')
+          ?.find((item: { id: any }) => item.id === +id)
+        console.log('chache', currtentItem)
+        return currtentItem ?? null
+      },
+      onError() {
+        history.push('/')
+      },
+      retry: 2,
+      retryDelay: 2000,
+    },
   )
   const { mutateAsync } = useMutation(setRating)
   const {
@@ -93,7 +115,7 @@ const ItemPage = () => {
 
   useEffect(() => {
     if (!isLoading) {
-      reset({ rating: data.rating.rate })
+      reset({ rating: data?.rating?.rate })
     }
   }, [isLoading])
 
@@ -104,11 +126,9 @@ const ItemPage = () => {
   const onFormSubmit = handleSubmit((formData) => {
     onSubmit(formData)
   })
+  if (isLoading) {
+    console.log(1)
 
-  const handleClick = () => {
-    history.push('/items')
-  }
-  if (isLoading)
     return (
       <Box
         sx={{
@@ -122,11 +142,17 @@ const ItemPage = () => {
         <CircularProgress />
       </Box>
     )
+  }
+
   if (isError) {
     throw new Error(error.message)
   }
   const tobbleButton = () => {
+    console.log(errors.rating)
+
     if (!errors.rating) {
+      console.log(1)
+
       setRated((prev) => !prev)
     }
   }
@@ -134,7 +160,9 @@ const ItemPage = () => {
   return (
     <div className={style.wrapper}>
       <Box className={style.content}>
-        <ArrowBackIcon className={style.arrow} onClick={handleClick} />
+        <Link to="/items">
+          <ArrowBackIcon className={style.arrow} />
+        </Link>
         <Box className={style.containerInfo}>
           <Box className={style.imageContainer}>
             <img src={data?.image} className={style.itemImg} />
@@ -172,7 +200,7 @@ const ItemPage = () => {
                     <p className={style.errorText}>This field is required</p>
                   )}
                   {errors?.rating?.type === 'pattern' && (
-                    <p className={style.errorText}>Only nubmers from 0 to 5</p>
+                    <p className={style.errorText}>Only nubmers from 1 to 5</p>
                   )}
                 </Typography>
               </Box>
