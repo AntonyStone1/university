@@ -57,6 +57,7 @@ export default function ItemListMU() {
   const style = useStyles()
   const queryClient = useQueryClient()
   console.log(queryClient.getQueryData('items'))
+  const history = useHistory()
 
   const { data, error, isLoading, isError } = useQuery('items', getItemsData, {
     placeholderData: () => {
@@ -70,7 +71,6 @@ export default function ItemListMU() {
     retry: 2,
     retryDelay: 2000,
   })
-  const history = useHistory()
 
   console.log('data', data)
   console.log('error', error)
@@ -88,7 +88,9 @@ export default function ItemListMU() {
     setRowsPerPage(+event.target.value)
     setPage(0)
   }
-  if (isLoading)
+  console.log(isLoading)
+
+  if (data === null)
     return (
       <Box
         sx={{

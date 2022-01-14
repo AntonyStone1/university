@@ -77,7 +77,6 @@ const useStyles = makeStyles({
 const ItemPage = () => {
   const history = useHistory()
   const queryClient = useQueryClient()
-  console.log(queryClient.getQueryData('items'))
 
   const style = useStyles()
   const { id }: any = useParams()
@@ -117,7 +116,7 @@ const ItemPage = () => {
     if (!isLoading) {
       reset({ rating: data?.rating?.rate })
     }
-  }, [isLoading])
+  }, [data])
 
   const onSubmit = async (formData: any) => {
     console.log({ ...formData, id })
@@ -126,9 +125,7 @@ const ItemPage = () => {
   const onFormSubmit = handleSubmit((formData) => {
     onSubmit(formData)
   })
-  if (isLoading) {
-    console.log(1)
-
+  if (data === null) {
     return (
       <Box
         sx={{
