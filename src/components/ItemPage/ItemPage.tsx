@@ -14,7 +14,7 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '80vh',
+    height: '100vh',
   },
   content: {
     display: 'flex',
@@ -90,11 +90,10 @@ const ItemPage = () => {
     getItem,
     {
       placeholderData() {
-        const currtentItem: any = queryClient
-          .getQueryData('items')
-          ?.find((item: { id: any }) => item.id === +id)
-        console.log('chache', currtentItem)
-        return currtentItem ?? null
+        const cacheData: any = queryClient.getQueryData('items')
+        const currentItem = cacheData?.find((item: { id: any }) => item.id === +id)
+        console.log('chache', currentItem)
+        return currentItem ?? null
       },
       onError() {
         history.push('/')
@@ -123,7 +122,10 @@ const ItemPage = () => {
     await mutateAsync({ ...formData, id })
   }
   const onFormSubmit = handleSubmit((formData) => {
-    onSubmit(formData)
+    if (!errors.rating) {
+      onSubmit(formData)
+      setRated((prev) => !prev)
+    }
   })
   if (data === null) {
     return (
@@ -143,15 +145,6 @@ const ItemPage = () => {
 
   if (isError) {
     throw new Error(error.message)
-  }
-  const tobbleButton = () => {
-    console.log(errors.rating)
-
-    if (!errors.rating) {
-      console.log(1)
-
-      setRated((prev) => !prev)
-    }
   }
 
   return (
@@ -214,7 +207,6 @@ const ItemPage = () => {
                   variant="outlined"
                   type="submit"
                   style={!isRated ? { display: 'none' } : {}}
-                  onClick={tobbleButton}
                 >
                   Submit
                 </Button>
