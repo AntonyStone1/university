@@ -9,4 +9,5 @@ export default interface IItemList {
     count: number
     rate: number
   }
+  rate: number
 }

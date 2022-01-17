@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom'
 import { makeStyles } from '@mui/styles'
 
 interface Column {
-  id: 'id' | 'title' | 'price' | 'category'
+  id: 'id' | 'title' | 'price' | 'category' | 'rating'
   label: string
   minWidth?: number
   align?: 'right' | 'center'
@@ -42,6 +42,12 @@ const columns: readonly Column[] = [
     align: 'center',
     format: (value: number) => value.toLocaleString('en-US'),
   },
+  // {
+  //   id: 'rating',
+  //   label: 'Rating',
+  //   minWidth: 10,
+  //   align: 'center',
+  // },
 ]
 const useStyles = makeStyles({
   link: {
@@ -53,7 +59,7 @@ const useStyles = makeStyles({
   },
 })
 
-export default function ItemListMU() {
+export function ItemListMU() {
   const style = useStyles()
   const queryClient = useQueryClient()
   console.log(queryClient.getQueryData('items'))
@@ -90,6 +96,9 @@ export default function ItemListMU() {
   }
   console.log(isLoading)
 
+  if (data !== null) {
+    console.log(data[0]['rating.rate'])
+  }
   if (data === null)
     return (
       <Box

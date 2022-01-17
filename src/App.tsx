@@ -4,7 +4,7 @@ import ItemPage from 'src/components/ItemPage/ItemPage'
 import { Container } from '@mui/material'
 import { QueryClientProvider, QueryClient } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
-import ItemListMU from './components/ItemList/ItemListMU'
+import ItemList from './components/ItemList/ItemList'
 
 const queryClient = new QueryClient()
 
@@ -15,7 +15,8 @@ function App() {
         <Switch>
           <Route exact path="/items">
             <Container>
-              <ItemListMU />
+              <ItemList />
+              {/* <ItemListMU /> */}
             </Container>
           </Route>
           <Route path="/items/:id">
